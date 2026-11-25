@@ -8,9 +8,9 @@ Stack: Vite, React 19, TypeScript, Tailwind CSS v4, React Router, Axios, Lucide 
 ## Run
 
 ```bash
-npm install
-npm run dev      # http://localhost:5173
-npm run build    # type-check + production build
+pnpm install
+pnpm run dev      # http://localhost:5173
+pnpm run build    # type-check + production build
 ```
 
 ## Routes
