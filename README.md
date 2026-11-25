@@ -1,5 +1,7 @@
 # Pharos Store
 
+- Project Demo: https://pharos-store.pages.dev
+
 Products list + product detail pages for an e-commerce app.
 Stack: Vite, React 19, TypeScript, Tailwind CSS v4, React Router, Axios, Lucide icons. Data from [DummyJSON](https://dummyjson.com).
 
