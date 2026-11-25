@@ -1,2 +1,5 @@
+packages:
+  - '.'
+
 minimumReleaseAgeExclude:
   - react-router@8.5.3
