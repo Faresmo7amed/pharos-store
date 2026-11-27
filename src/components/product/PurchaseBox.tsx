@@ -44,12 +44,24 @@ export function PurchaseBox({ product, unitPrice, purchase }: PurchaseBoxProps &
     const favourite = isFavourite(product.id)
     const { min, max, quantity, setQuantity, soldOut, total, added, add } = purchase
 
+    // While typing we keep the raw text, so the number isn't clamped after every key.
+    // It is clamped to min/max when the field loses focus or Enter is pressed.
+    const [draft, setDraft] = useState<string | null>(null)
+    const commit = () => {
+        if (draft !== null) setQuantity(parseInt(draft, 10) || min)
+        setDraft(null)
+    }
+    const step = (next: number) => {
+        setDraft(null)
+        setQuantity(next)
+    }
+
     return (
         <div className="flex flex-col gap-4 rounded-2xl border border-line bg-s1 p-4">
             <div className="flex flex-wrap items-center gap-x-4 gap-y-2.5">
                 <label htmlFor="quantity" className="font-semibold">Quantity</label>
                 <div className="inline-flex h-12 overflow-hidden rounded-xl border border-line2 bg-s2 focus-within:border-acc">
-                    <button type="button" aria-label="Decrease quantity" disabled={soldOut || quantity <= min} onClick={() => setQuantity(quantity - 1)} className="grid w-12 place-items-center transition-colors hover:bg-s3 disabled:cursor-not-allowed disabled:opacity-35">
+                    <button type="button" aria-label="Decrease quantity" disabled={soldOut || quantity <= min} onClick={() => step(quantity - 1)} className="grid w-12 place-items-center transition-colors hover:bg-s3 disabled:cursor-not-allowed disabled:opacity-35">
                         <Minus className="size-[18px]" />
                     </button>
                     <input
@@ -58,12 +70,14 @@ export function PurchaseBox({ product, unitPrice, purchase }: PurchaseBoxProps &
                         inputMode="numeric"
                         min={min}
                         max={max}
-                        value={quantity}
+                        value={draft ?? quantity}
                         disabled={soldOut}
-                        onChange={(event) => setQuantity(parseInt(event.target.value, 10) || min)}
+                        onChange={(event) => setDraft(event.target.value.replace(/\D/g, ''))}
+                        onBlur={commit}
+                        onKeyDown={(event) => event.key === 'Enter' && commit()}
                         className="w-16 border-x border-line2 bg-transparent text-center text-base font-semibold tabular-nums outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
                     />
-                    <button type="button" aria-label="Increase quantity" disabled={soldOut || quantity >= max} onClick={() => setQuantity(quantity + 1)} className="grid w-12 place-items-center transition-colors hover:bg-s3 disabled:cursor-not-allowed disabled:opacity-35">
+                    <button type="button" aria-label="Increase quantity" disabled={soldOut || quantity >= max} onClick={() => step(quantity + 1)} className="grid w-12 place-items-center transition-colors hover:bg-s3 disabled:cursor-not-allowed disabled:opacity-35">
                         <Plus className="size-[18px]" />
                     </button>
                 </div>
