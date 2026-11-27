@@ -1,4 +1,4 @@
-import { Check, Heart, Info, Minus, Plus, Share2, ShoppingCart } from 'lucide-react'
+import { Check, Heart, Info, Minus, Plus, Share2, ShoppingCart, TriangleAlert } from 'lucide-react'
 import { useState } from 'react'
 import { useShop } from '../../context/ShopContext'
 import { formatPrice } from '../../lib/format'
@@ -47,13 +47,27 @@ export function PurchaseBox({ product, unitPrice, purchase }: PurchaseBoxProps &
     // While typing we keep the raw text, so the number isn't clamped after every key.
     // It is clamped to min/max when the field loses focus or Enter is pressed.
     const [draft, setDraft] = useState<string | null>(null)
+    const [overLimit, setOverLimit] = useState(false)
     const commit = () => {
         if (draft !== null) setQuantity(parseInt(draft, 10) || min)
         setDraft(null)
     }
     const step = (next: number) => {
         setDraft(null)
+        setOverLimit(false)
         setQuantity(next)
+    }
+    // Above the stock: snap back to the maximum right away and warn.
+    // Below the minimum is allowed while typing ("7" on the way to "75"), it is fixed on blur.
+    const type = (raw: string) => {
+        const digits = raw.replace(/\D/g, '')
+        if (digits !== '' && parseInt(digits, 10) > max) {
+            setDraft(String(max))
+            setOverLimit(true)
+        } else {
+            setDraft(digits)
+            setOverLimit(false)
+        }
     }
 
     return (
@@ -72,7 +86,7 @@ export function PurchaseBox({ product, unitPrice, purchase }: PurchaseBoxProps &
                         max={max}
                         value={draft ?? quantity}
                         disabled={soldOut}
-                        onChange={(event) => setDraft(event.target.value.replace(/\D/g, ''))}
+                        onChange={(event) => type(event.target.value)}
                         onBlur={commit}
                         onKeyDown={(event) => event.key === 'Enter' && commit()}
                         className="w-16 border-x border-line2 bg-transparent text-center text-base font-semibold tabular-nums outline-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
@@ -81,11 +95,18 @@ export function PurchaseBox({ product, unitPrice, purchase }: PurchaseBoxProps &
                         <Plus className="size-[18px]" />
                     </button>
                 </div>
-                {min > 1 && (
+                {overLimit ? (
+                    <span role="alert" className="inline-flex items-center gap-1.5 text-[13px] font-medium text-bad">
+                        <TriangleAlert className="size-4" />
+                        Only {max} in stock. Quantity set to {max}.
+                    </span>
+                ) : (
+                    min > 1 && (
                     <span className="inline-flex items-center gap-1.5 text-[13px] text-tx2">
                         <Info className="size-4 text-acc" />
                         Minimum order: {min} units
                     </span>
+                    )
                 )}
             </div>
 
